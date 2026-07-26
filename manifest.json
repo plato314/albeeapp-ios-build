@@ -1,0 +1,26 @@
+{
+  "name": "代購記帳工具",
+  "short_name": "代購記帳",
+  "description": "代購訂單、成本、收款與出貨管理工具",
+  "lang": "zh-TW",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5eee6",
+  "theme_color": "#b89268",
+  "icons": [
+    {
+      "src": "./app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

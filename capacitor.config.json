@@ -1,0 +1,13 @@
+{
+  "appId": "tw.albee.purchaseledger",
+  "appName": "代購記帳工具",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#f9f6f2"
+  },
+  "ios": {
+    "backgroundColor": "#f9f6f2",
+    "preferredContentMode": "mobile"
+  }
+}

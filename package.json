@@ -1,0 +1,30 @@
+{
+  "name": "purchase-ledger-android",
+  "version": "25.5.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:web": "node scripts/build-web.mjs && tailwindcss -i ./src/tailwind.css -o ./www/tailwind.css --minify",
+    "sync:android": "npm run build:web && cap sync android",
+    "sync:ios": "npm run build:web && cap sync ios && node scripts/fix-ios-spm-paths.mjs",
+    "build:android": "npm run sync:android && cd android && gradlew.bat assembleDebug",
+    "open:ios": "npm run sync:ios && cap open ios",
+    "verify:ios": "node scripts/verify-ios.mjs",
+    "verify": "node scripts/verify-build.mjs && npm run verify:ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.4.2",
+    "@capacitor/camera": "8.2.1",
+    "@capacitor/core": "8.4.2",
+    "@capacitor/filesystem": "8.1.2",
+    "@capacitor/ios": "8.4.2",
+    "@capacitor/share": "8.0.1",
+    "@fortawesome/fontawesome-free": "7.3.1",
+    "chart.js": "4.5.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.4.2",
+    "esbuild": "0.28.1",
+    "tailwindcss": "3.4.19"
+  }
+}

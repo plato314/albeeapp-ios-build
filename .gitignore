@@ -1,0 +1,11 @@
+node_modules/
+www/
+android/.gradle/
+android/.idea/
+android/build/
+android/app/build/
+ios/App/App.xcodeproj/project.xcworkspace/xcuserdata/
+ios/App/App.xcodeproj/xcuserdata/
+ios/App/DerivedData/
+*.jks
+*.keystore
