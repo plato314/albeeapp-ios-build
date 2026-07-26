@@ -1,0 +1,89 @@
+name: Build unsigned iOS IPA
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build iPhone device app
+    runs-on: macos-26-intel
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Prepare source
+        shell: bash
+        run: |
+          SOURCE_ARCHIVE="$(find . -maxdepth 1 -name 'albeeapp-ios-source-*.zip.b64' -print -quit)"
+          if [[ -n "$SOURCE_ARCHIVE" ]]; then
+            mkdir -p app-source
+            base64 -D -i "$SOURCE_ARCHIVE" -o app-source.zip
+            ditto -x -k app-source.zip app-source
+            echo "APP_DIR=$GITHUB_WORKSPACE/app-source" >> "$GITHUB_ENV"
+          else
+            echo "APP_DIR=$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+          fi
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: cd "$APP_DIR" && npm ci
+
+      - name: Sync iOS project
+        run: cd "$APP_DIR" && npm run sync:ios
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Resolve Swift packages
+        run: |
+          xcodebuild \
+            -resolvePackageDependencies \
+            -project "$APP_DIR/ios/App/App.xcodeproj" \
+            -scheme App
+
+      - name: Build unsigned device app
+        run: |
+          xcodebuild \
+            -project "$APP_DIR/ios/App/App.xcodeproj" \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath "$GITHUB_WORKSPACE/build/ios" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Package unsigned IPA
+        run: |
+          APP_PATH="$GITHUB_WORKSPACE/build/ios/Build/Products/Release-iphoneos/App.app"
+          test -d "$APP_PATH"
+          VERSION="$(node -p "require(process.env.APP_DIR + '/package.json').version")"
+          mkdir -p "$GITHUB_WORKSPACE/artifact/Payload"
+          cp -R "$APP_PATH" "$GITHUB_WORKSPACE/artifact/Payload/"
+          (
+            cd "$GITHUB_WORKSPACE/artifact"
+            ditto -c -k --sequesterRsrc --keepParent Payload \
+              "purchase-ledger-v${VERSION}-unsigned.ipa"
+            shasum -a 256 "purchase-ledger-v${VERSION}-unsigned.ipa" \
+              > "purchase-ledger-v${VERSION}-unsigned.ipa.sha256"
+          )
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: purchase-ledger-unsigned-ipa
+          path: |
+            artifact/*.ipa
+            artifact/*.sha256
+          if-no-files-found: error
+          retention-days: 7
